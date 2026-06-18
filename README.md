@@ -158,21 +158,15 @@ Stores submitted code and generated review results in SQLite so they can be reus
 
 ### Code Submission Page
 
-```md id="vwi45r"
 ![Code Submission Page](./media/code-submission.png)
-```
 
 ### AI Review Result Page
 
-```md id="810a2v"
 ![AI Review Result Page](./media/review-result.png)
-```
 
 ### Review History Page
 
-```md id="47duh8"
 ![Review History Page](./media/review-history.png)
-```
 
 ---
 
