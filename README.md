@@ -5,6 +5,8 @@ A RAG-powered AI code review application built with Python.
 This project reviews submitted Python code by combining static analysis, RAG retrieval, and LLM-based review generation.
 The main goal of this project was to understand how LLM applications can use previous data as context instead of simply sending a single prompt to the model.
 
+![HomePage](./media/homepage.png)
+
 ---
 
 ## 🚀 Features
