@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Review History — AI Code Reviewer{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title">Review History</h1>
+  <p class="page-subtitle">All past code reviews stored in the RAG knowledge base</p>
+  <a href="/" class="btn btn-primary btn-sm">+ New Review</a>
+</div>
+
+{% if error %}
+<div class="alert alert-error">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  {{ error }}
+</div>
+{% endif %}
+
+{% if reviews %}
+<div class="history-grid">
+  {% for review in reviews %}
+  <a href="/review/{{ review.id }}" class="history-card card">
+    <div class="history-card-header">
+      <div class="history-badges">
+        <span class="badge badge-lang">{{ review.get('language', 'unknown') }}</span>
+        {% set sev = review.get('severity', 'info') %}
+        {% if sev == 'error' %}
+          <span class="badge badge-error">⚠ Issues</span>
+        {% elif sev == 'warning' %}
+          <span class="badge badge-warning">⚡ Warnings</span>
+        {% else %}
+          <span class="badge badge-ok">✓ OK</span>
+        {% endif %}
+        {% if review.get('issues_count', 0) > 0 %}
+          <span class="badge badge-issues">{{ review['issues_count'] }} issues</span>
+        {% endif %}
+      </div>
+      <span class="history-date">{{ review.get('created_at', '')[:10] }}</span>
+    </div>
+
+    <div class="history-code-preview">
+      <code>{{ review.get('code', '')[:180] | e }}{% if review.get('code', '') | length > 180 %}…{% endif %}</code>
+    </div>
+
+    {% if review.get('tags') %}
+    <div class="tags-list tags-sm">
+      {% for tag in (review.get('tags') if review.get('tags') is iterable and review.get('tags') is not string else []) %}
+        <span class="tag tag-sm">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="history-card-footer">
+      <span>{{ review.get('code', '').splitlines() | length }} lines</span>
+      <span class="history-view-link">View Review →</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state card">
+  <div class="empty-icon">📭</div>
+  <h3>No reviews yet</h3>
+  <p>Submit your first code review to start building the RAG knowledge base.</p>
+  <a href="/" class="btn btn-primary">Review Code Now</a>
+</div>
+{% endif %}
+
+{% endblock %}

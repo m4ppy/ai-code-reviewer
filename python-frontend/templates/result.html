@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Code Review Result — AI Code Reviewer{% endblock %}
+{% block content %}
+
+<div class="result-header">
+  <div class="result-meta">
+    <div class="result-badges">
+      {% set sev = review_data.get('severity', 'info') %}
+      <span class="badge badge-lang">{{ review_data.get('language', 'unknown') }}</span>
+      {% if sev == 'error' %}
+        <span class="badge badge-error">⚠ Issues Found</span>
+      {% elif sev == 'warning' %}
+        <span class="badge badge-warning">⚡ Warnings</span>
+      {% else %}
+        <span class="badge badge-ok">✓ Looks Good</span>
+      {% endif %}
+      {% if review_data.get('rag_context_used') %}
+        <span class="badge badge-rag">📚 RAG: {{ review_data.get('similar_reviews_count', 0) }} similar reviews used</span>
+      {% else %}
+        <span class="badge badge-rag-none">📚 No similar reviews (first review!)</span>
+      {% endif %}
+      {% if review_data.get('issues_count', 0) > 0 %}
+        <span class="badge badge-issues">{{ review_data.get('issues_count', 0) }} AST issues</span>
+      {% endif %}
+    </div>
+    <div class="result-actions">
+      <a href="/" class="btn btn-ghost btn-sm">← New Review</a>
+      <a href="/history" class="btn btn-ghost btn-sm">History</a>
+      <button class="btn btn-ghost btn-sm" onclick="copyReview()">Copy Markdown</button>
+    </div>
+  </div>
+</div>
+
+<div class="result-layout">
+  <div class="review-panel">
+    <div class="card review-content">
+      <div class="review-markdown" id="reviewContent">
+        {{ review_html | safe }}
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-panel">
+    {% if review_data.get('tags') %}
+    <div class="card sidebar-card">
+      <h4 class="sidebar-title">Tags</h4>
+      <div class="tags-list">
+        {% for tag in review_data.get('tags', []) %}
+          <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card sidebar-card">
+      <h4 class="sidebar-title">Code Submitted</h4>
+      <div class="code-preview-wrapper">
+        <pre class="code-preview"><code>{{ submitted_code | e }}</code></pre>
+      </div>
+      <div class="code-meta">
+        <span>{{ submitted_code.splitlines() | length }} lines</span>
+        <span>{{ submitted_code | length }} chars</span>
+      </div>
+    </div>
+
+    {% if review_data.get('ast_summary') %}
+    <div class="card sidebar-card">
+      <h4 class="sidebar-title">Static Analysis</h4>
+      <p class="ast-summary">{{ review_data.get('ast_summary') }}</p>
+    </div>
+    {% endif %}
+
+    <div class="card sidebar-card">
+      <h4 class="sidebar-title">Pipeline Used</h4>
+      <div class="pipeline-vertical">
+        <div class="pipeline-v-step completed">
+          <span class="pv-icon">🔍</span>
+          <div>
+            <div class="pv-label">Python AST Analysis</div>
+            <div class="pv-detail">{{ review_data.get('issues_count', 0) }} issues detected</div>
+          </div>
+        </div>
+        <div class="pv-connector"></div>
+        <div class="pipeline-v-step {% if review_data.get('rag_context_used') %}completed{% else %}skipped{% endif %}">
+          <span class="pv-icon">📚</span>
+          <div>
+            <div class="pv-label">RAG Retrieval</div>
+            <div class="pv-detail">
+              {% if review_data.get('rag_context_used') %}
+                {{ review_data.get('similar_reviews_count') }} reviews retrieved
+              {% else %}
+                No similar reviews found yet
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="pv-connector"></div>
+        <div class="pipeline-v-step completed">
+          <span class="pv-icon">🤖</span>
+          <div>
+            <div class="pv-label">AI Review (GPT-5.2)</div>
+            <div class="pv-detail">Review generated</div>
+          </div>
+        </div>
+        <div class="pv-connector"></div>
+        <div class="pipeline-v-step completed">
+          <span class="pv-icon">📝</span>
+          <div>
+            <div class="pv-label">Markdown Rendered</div>
+            <div class="pv-detail">Review ID #{{ review_data.get('id') }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const rawMarkdown = {{ review_data.get('review_markdown', '') | tojson }};
+function copyReview() {
+  navigator.clipboard.writeText(rawMarkdown).then(() => {
+    const btn = document.querySelector('button[onclick="copyReview()"]');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+</script>
+
+{% endblock %}

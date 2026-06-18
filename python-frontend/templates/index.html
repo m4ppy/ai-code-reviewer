@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}AI Code Reviewer — Submit Code{% endblock %}
+{% block content %}
+
+<div class="hero">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    RAG-Powered &bull; Python AST &bull; AI Analysis
+  </div>
+  <h1 class="hero-title">Intelligent Code Review</h1>
+  <p class="hero-subtitle">
+    Paste your code below. Our system runs static analysis, retrieves similar past reviews
+    from the knowledge base, and generates a comprehensive AI-powered review.
+  </p>
+</div>
+
+{% if error %}
+<div class="alert alert-error">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  {{ error }}
+</div>
+{% endif %}
+
+<div class="card review-form-card">
+  <form action="/review" method="POST" id="reviewForm">
+    <div class="form-header">
+      <div class="form-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Code Input
+      </div>
+      <div class="form-actions-top">
+        <select name="language" id="langSelect" class="lang-select">
+          <option value="">Auto-detect language</option>
+          <option value="python">Python</option>
+          <option value="javascript">JavaScript</option>
+          <option value="typescript">TypeScript</option>
+          <option value="java">Java</option>
+          <option value="go">Go</option>
+          <option value="rust">Rust</option>
+          <option value="cpp">C++</option>
+          <option value="c">C</option>
+        </select>
+        <button type="button" class="btn btn-ghost btn-sm" id="clearBtn">Clear</button>
+        <button type="button" class="btn btn-ghost btn-sm" id="loadExampleBtn">Load Example</button>
+      </div>
+    </div>
+
+    <div class="editor-wrapper">
+      <textarea
+        name="code"
+        id="codeInput"
+        class="code-editor"
+        placeholder="# Paste your code here...
+
+def example_function(data=[]):
+    for item in data:
+        try:
+            process(item)
+        except:
+            pass"
+        spellcheck="false"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+      >{{ submitted_code or '' }}</textarea>
+      <div class="editor-footer">
+        <span id="charCount" class="char-count">0 chars</span>
+        <span id="lineCount" class="char-count">0 lines</span>
+      </div>
+    </div>
+
+    <div class="form-submit">
+      <div class="pipeline-info">
+        <div class="pipeline-step">
+          <span class="step-icon">🔍</span>
+          <span>AST Analysis</span>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">
+          <span class="step-icon">📚</span>
+          <span>RAG Retrieval</span>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">
+          <span class="step-icon">🤖</span>
+          <span>AI Review</span>
+        </div>
+        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-step">
+          <span class="step-icon">📝</span>
+          <span>Report</span>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span id="submitText">Review My Code</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<div class="features-grid">
+  <div class="feature-card">
+    <div class="feature-icon">🔬</div>
+    <h3>Static Analysis</h3>
+    <p>Python AST parser detects mutable defaults, bare excepts, missing docstrings, long functions, and cyclomatic complexity.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🧠</div>
+    <h3>RAG Memory</h3>
+    <p>TF-IDF similarity retrieval finds relevant past reviews, enriching the AI prompt with contextual knowledge from your history.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">⚡</div>
+    <h3>AI-Powered Review</h3>
+    <p>GPT-5.2 generates structured Markdown reviews covering security, performance, best practices, and actionable refactoring suggestions.</p>
+  </div>
+</div>
+
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="loading-card">
+    <div class="spinner"></div>
+    <h3>Analyzing your code…</h3>
+    <div class="loading-steps">
+      <div class="loading-step active" id="step1">🔍 Running static analysis</div>
+      <div class="loading-step" id="step2">📚 Retrieving similar past reviews</div>
+      <div class="loading-step" id="step3">🤖 Generating AI review</div>
+      <div class="loading-step" id="step4">📝 Formatting results</div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
